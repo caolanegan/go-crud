@@ -5,7 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/caolanegan/go-crud/storage" // Import database package
+	"github.com/caolanegan/go-crud/handlers"
+	"github.com/caolanegan/go-crud/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -13,15 +14,20 @@ import (
 func main() {
 	// Connect to Cassandra
 	storage.ConnectDatabase()
-	defer storage.Session.Close() // Ensure session closes when app stops
+	defer storage.Session.Close()
 
 	r := chi.NewRouter()
-	r.Use(middleware.Logger) // Logs incoming requests
+	r.Use(middleware.Logger)
 
-	// Health check route
+	// Health check
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Welcome to Go CRUD API!"))
 	})
+
+	// User Routes
+	r.Post("/users", handlers.CreateUserHandler)      // Create user
+	r.Get("/users", handlers.GetUserHandler)          // Get user by ID
+	r.Get("/listUsers", handlers.ListAllUserHandlers) // List all users
 
 	fmt.Println("Starting server on :8080...")
 	log.Fatal(http.ListenAndServe(":8080", r))
